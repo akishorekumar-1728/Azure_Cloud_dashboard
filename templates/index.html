@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <title>Azure VM Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+
+    h1 { text-align: center; }
+
+    table {
+      width: 100%;
+      background: white;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th { background: #2c3e50; color: white; }
+
+    .running { background: green; color: white; padding: 6px 12px; border-radius: 20px; }
+    .stopped { background: red; color: white; padding: 6px 12px; border-radius: 20px; }
+
+    button {
+      padding: 6px 12px;
+      border: none;
+      cursor: pointer;
+      color: white;
+      border-radius: 5px;
+    }
+
+    .start { background: green; }
+    .stop { background: red; }
+
+    .chart-box { width: 300px; margin: auto; }
+  </style>
+</head>
+
+<body>
+
+<h1>☁ Azure VM Dashboard</h1>
+
+<div class="chart-box">
+  <canvas id="vmChart"></canvas>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Resource Group</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="vm-table"></tbody>
+</table>
+
+<script>
+async function loadVMs() {
+  const res = await fetch("/api/vms");
+  const vms = await res.json();
+
+  const table = document.getElementById("vm-table");
+  table.innerHTML = "";
+
+  vms.forEach(vm => {
+    const cls = vm.status === "running" ? "running" : "stopped";
+    const btn = vm.status === "running"
+      ? `<button class="stop" onclick="stopVM('${vm.resource_group}','${vm.name}')">Stop</button>`
+      : `<button class="start" onclick="startVM('${vm.resource_group}','${vm.name}')">Start</button>`;
+
+    table.innerHTML += `
+      <tr>
+        <td>${vm.name}</td>
+        <td>${vm.resource_group}</td>
+        <td><span class="${cls}">${vm.status}</span></td>
+        <td>${btn}</td>
+      </tr>`;
+  });
+}
+
+async function startVM(rg, name) {
+  await fetch("/api/vm/start", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({resource_group: rg, vm_name: name})
+  });
+  loadVMs();
+}
+
+async function stopVM(rg, name) {
+  await fetch("/api/vm/stop", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({resource_group: rg, vm_name: name})
+  });
+  loadVMs();
+}
+
+let chart;
+async function loadChart() {
+  const res = await fetch("/api/vm/status-count");
+  const data = await res.json();
+
+  if (!chart) {
+    chart = new Chart(document.getElementById("vmChart"), {
+      type: "doughnut",
+      data: {
+        labels: ["Running", "Stopped"],
+        datasets: [{ data: [data.running, data.stopped], backgroundColor: ["green", "red"] }]
+      }
+    });
+  } else {
+    chart.data.datasets[0].data = [data.running, data.stopped];
+    chart.update();
+  }
+}
+
+setInterval(() => {
+  loadVMs();
+  loadChart();
+}, 5000);
+
+loadVMs();
+loadChart();
+</script>
+
+</body>
+</html>
