@@ -6,7 +6,7 @@ from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 
 # ---------------- LOAD ENV (LOCAL ONLY) ----------------
-# In Azure App Service, env comes from Configuration -> Application settings
+# In Azure App Service, env comes from Configuration -> Environment variables
 if not os.getenv("WEBSITE_SITE_NAME"):
     try:
         from dotenv import load_dotenv
@@ -22,6 +22,10 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "secret123")
 @app.get("/healthz")
 def healthz():
     return jsonify({"status": "ok"}), 200
+
+# ---------------- ADMIN LOGIN (FROM ENV) ----------------
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@gmail.com")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 
 # ---------------- AZURE AUTH ----------------
 TENANT_ID = os.getenv("AZURE_TENANT_ID")
@@ -50,7 +54,6 @@ resource_client = ResourceManagementClient(credential, SUBSCRIPTION_ID)
 
 # ---------------- HELPERS ----------------
 def extract_rg_from_id(resource_id: str) -> str:
-    # /subscriptions/<id>/resourceGroups/<rg>/providers/...
     try:
         return resource_id.split("/")[4]
     except Exception:
@@ -74,10 +77,11 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
+        email = (request.form.get("email") or "").strip()
+        password = (request.form.get("password") or "").strip()
 
-        if email == "admin@gmail.com" and password == "admin123":
+        # ✅ Now secure: values come from Azure Environment Variables
+        if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
             session["user"] = email
             return redirect(url_for("dashboard"))
 
@@ -96,7 +100,7 @@ def dashboard():
         return redirect(url_for("login"))
     return render_template("dashboard.html")
 
-# ---------------- STEP 7: RESOURCE GROUP APIs ----------------
+# ---------------- RESOURCE GROUP APIs ----------------
 @app.get("/api/resource-groups")
 def list_resource_groups():
     if not require_login():
@@ -156,7 +160,6 @@ def list_vms():
 def vm_details():
     if not require_login():
         return jsonify({"error": "Unauthorized"}), 401
-
     try:
         rg = request.args.get("resource_group")
         vm_name = request.args.get("vm_name")
@@ -167,7 +170,6 @@ def vm_details():
         power_state = get_power_state(rg, vm_name)
 
         vm_size = vm.hardware_profile.vm_size if vm.hardware_profile else None
-
         os_type = None
         if vm.storage_profile and vm.storage_profile.os_disk and vm.storage_profile.os_disk.os_type:
             os_type = vm.storage_profile.os_disk.os_type.value
@@ -180,7 +182,6 @@ def vm_details():
             "os_type": os_type,
             "power_state": power_state
         }), 200
-
     except HttpResponseError as e:
         return jsonify({"error": str(e)}), 500
     except Exception as e:
@@ -190,17 +191,14 @@ def vm_details():
 def start_vm():
     if not require_login():
         return jsonify({"error": "Unauthorized"}), 401
-
     try:
         data = request.json or {}
         rg = data.get("resource_group")
         vm_name = data.get("vm_name")
         if not rg or not vm_name:
             return jsonify({"error": "resource_group and vm_name are required"}), 400
-
         compute_client.virtual_machines.begin_start(rg, vm_name)
         return jsonify({"message": "VM start initiated"}), 200
-
     except HttpResponseError as e:
         return jsonify({"error": str(e)}), 500
     except Exception as e:
@@ -210,17 +208,14 @@ def start_vm():
 def stop_vm():
     if not require_login():
         return jsonify({"error": "Unauthorized"}), 401
-
     try:
         data = request.json or {}
         rg = data.get("resource_group")
         vm_name = data.get("vm_name")
         if not rg or not vm_name:
             return jsonify({"error": "resource_group and vm_name are required"}), 400
-
         compute_client.virtual_machines.begin_deallocate(rg, vm_name)
         return jsonify({"message": "VM stop initiated"}), 200
-
     except HttpResponseError as e:
         return jsonify({"error": str(e)}), 500
     except Exception as e:
@@ -230,17 +225,14 @@ def stop_vm():
 def restart_vm():
     if not require_login():
         return jsonify({"error": "Unauthorized"}), 401
-
     try:
         data = request.json or {}
         rg = data.get("resource_group")
         vm_name = data.get("vm_name")
         if not rg or not vm_name:
             return jsonify({"error": "resource_group and vm_name are required"}), 400
-
         compute_client.virtual_machines.begin_restart(rg, vm_name)
         return jsonify({"message": "VM restart initiated"}), 200
-
     except HttpResponseError as e:
         return jsonify({"error": str(e)}), 500
     except Exception as e:
@@ -250,17 +242,14 @@ def restart_vm():
 def delete_vm():
     if not require_login():
         return jsonify({"error": "Unauthorized"}), 401
-
     try:
         data = request.json or {}
         rg = data.get("resource_group")
         vm_name = data.get("vm_name")
         if not rg or not vm_name:
             return jsonify({"error": "resource_group and vm_name are required"}), 400
-
         compute_client.virtual_machines.begin_delete(rg, vm_name)
         return jsonify({"message": "VM delete initiated"}), 200
-
     except HttpResponseError as e:
         return jsonify({"error": str(e)}), 500
     except Exception as e:
@@ -270,15 +259,12 @@ def delete_vm():
 def vm_status_count():
     if not require_login():
         return jsonify({"error": "Unauthorized"}), 401
-
     try:
         total = running = stopped = other = 0
-
         for vm in compute_client.virtual_machines.list_all():
             total += 1
             rg = extract_rg_from_id(vm.id)
             state = get_power_state(rg, vm.name) if rg else "unknown"
-
             if state == "running":
                 running += 1
             elif state in ("stopped", "deallocated"):
@@ -292,7 +278,6 @@ def vm_status_count():
             "stopped": stopped,
             "other": other
         }), 200
-
     except HttpResponseError as e:
         return jsonify({"error": str(e)}), 500
     except Exception as e:
