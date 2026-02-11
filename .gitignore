@@ -4,4 +4,17 @@ __pycache__/
 *.pyc
 *.pem
 test-vm-1_key.pem
+# secrets
+.env
+*.env
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# flask
+instance/
 
