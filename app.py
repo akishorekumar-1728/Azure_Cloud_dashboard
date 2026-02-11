@@ -21,7 +21,8 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "secret123")
 # ---------------- HEALTH CHECK (IMPORTANT FOR AZURE) ----------------
 @app.route("/healthz")
 def healthz():
-    return "ok", 200
+    return jsonify({"status": "ok"}), 200
+
 
 # ---------------- AZURE AUTH ----------------
 TENANT_ID = os.getenv("AZURE_TENANT_ID")
