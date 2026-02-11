@@ -1,110 +1,173 @@
-# **📌 Azure Cloud Dashboard – Project Overview**
 
-**Azure Cloud Dashboard** is a *web-based dashboard application* designed to monitor and visualize Microsoft Azure cloud resources in a single, user-friendly interface. It allows administrators to view the status and performance of Azure services such as virtual machines and other cloud resources from one consolidated dashboard.([GitHub][1])
 
----
+# ☁️ Azure Cloud Dashboard
 
-## **🧾 Project Statement**
+## 📌 Project Statement
 
-The Azure Cloud Dashboard project aims to simplify cloud monitoring by creating a centralized web application that connects to Azure services to retrieve and display resource status. This dashboard helps cloud administrators quickly assess the health of critical infrastructure without navigating the Azure portal.([GitHub][1])
+Azure Cloud Dashboard is a web-based cloud management application built using Flask and Azure SDK.
+The system allows users to monitor and manage Azure Virtual Machines and Resource Groups in real-time through a secure, interactive dashboard deployed on Azure App Service.
 
----
-
-## **✨ Key Features**
-
-✔ View real-time status of Azure Virtual Machines and other Azure resources
-✔ Clean and responsive dashboard UI
-✔ Single panel to monitor cloud infrastructure
-✔ Helps administrators quickly evaluate resource status
-✔ Easy to extend for additional Azure services
-✔ Core monitoring features integrated in web interface([GitHub][1])
+The goal of this project is to simplify Azure infrastructure management using a custom-built cloud control panel with VM lifecycle operations and monitoring features.
 
 ---
 
-## **🛠️ Technology Stack**
+## 🚀 Features
 
-### **Frontend**
+### 🔐 Authentication
 
-* **HTML** – Page structure and layout
-* **CSS** – Styling and responsive design([GitHub][1])
+* Secure login system (Session-based authentication)
+* Environment variable-based Azure Service Principal authentication
 
-### **Backend**
+### 🖥 Virtual Machine Management
 
-* **Python (Flask)** – Serves the dashboard and handles API integration
-  (based on presence of `app.py`)([GitHub][1])
+* List all Virtual Machines in the subscription
+* View VM details (size, OS type, location, power state)
+* Start Virtual Machine
+* Stop (Deallocate) Virtual Machine
+* Restart Virtual Machine
+* Delete Virtual Machine
+* VM Status Count (Running / Stopped / Other)
 
-### **Cloud**
+### 📦 Resource Group Explorer
 
-* **Microsoft Azure Platform** – Cloud services being monitored
-* **Azure APIs** – Used to fetch resource data (implied by project goal)
+* List all Resource Groups
+* View all resources inside a selected Resource Group
+* Organized output (sorted by type and name)
 
-### **Testing**
+### 📊 Monitoring & Health
 
-* `test_auth.py` – Tests related to authentication
-* `test_azure.py` – Tests validating Azure integration([GitHub][1])
+* `/healthz` endpoint for Azure Health Check
+* Application Insights integration
+* App Service Log monitoring
 
----
+### 🌐 Cloud Deployment
 
-## **🧩 APIs Used**
-
-Although not explicitly shown in the README, based on the project structure and purpose, the following APIs would typically be used:
-
-🔹 **Azure Resource Management API** – To list and fetch Azure resources
-🔹 **Azure Monitor API** – To get metrics and statuses of virtual machines and services
-🔹 **Azure Authentication API (AD)** – For securely accessing Azure resources from backend code
-
-These REST APIs are integrated via Python to retrieve data and then shown on the dashboard.
-
----
-
-## **📁 Code Files Explained**
-
-| **File**            | **Purpose**                                                |               
-| ------------------- | ---------------------------------------------------------- | 
-| `app.py`            | Main Flask/Python server to serve dashboard and Azure data |               
-| `README.md`         | Project overview and feature list                          |               
-| `requirements.txt`  | Lists Python packages needed                               |               
-| `test_auth.py`      | Unit tests for authentication flow                         |               
-| `test_azure.py`     | Unit tests for Azure API integration                       |               
-| `test-vm-1_key.pem` | Example/placeholder key file (likely for test VM)          |               
-| `templates/`        | HTML templates used for dashboard UI                       | 
+* Deployed on Azure App Service (Linux)
+* CI/CD ready via GitHub
+* Production URL enabled
 
 ---
 
-## **⚙️ Project Setup (Step-by-Step)**
+## 🛠 Tech Stack
 
-1️⃣ **Clone the GitHub Repository**
+### 💻 Backend
+
+* Python 3.11
+* Flask
+* Gunicorn (Production WSGI Server)
+
+### ☁️ Cloud
+
+* Microsoft Azure
+* Azure App Service (Linux)
+* Azure Virtual Machines
+* Azure Resource Manager
+* Azure Application Insights
+
+### 🔐 Authentication & Identity
+
+* Azure Service Principal
+* Azure Identity SDK
+
+### 📦 Azure SDK Libraries
+
+* azure-identity
+* azure-mgmt-compute
+* azure-mgmt-resource
+* azure-core
+
+### 🎨 Frontend
+
+* HTML
+* CSS
+* JavaScript
+* Azure-themed UI design
+
+---
+
+## 🔌 APIs Used
+
+### 🔹 Virtual Machine APIs
+
+| Endpoint               | Method | Description       |
+| ---------------------- | ------ | ----------------- |
+| `/api/vms`             | GET    | List all VMs      |
+| `/api/vm/details`      | GET    | Get VM details    |
+| `/api/vm/start`        | POST   | Start VM          |
+| `/api/vm/stop`         | POST   | Stop VM           |
+| `/api/vm/restart`      | POST   | Restart VM        |
+| `/api/vm/delete`       | POST   | Delete VM         |
+| `/api/vm/status-count` | GET    | Get VM statistics |
+
+### 🔹 Resource Group APIs
+
+| Endpoint                 | Method | Description              |
+| ------------------------ | ------ | ------------------------ |
+| `/api/resource-groups`   | GET    | List all resource groups |
+| `/api/resources?rg=name` | GET    | List resources inside RG |
+
+### 🔹 Health Check
+
+| Endpoint   | Method | Description                           |
+| ---------- | ------ | ------------------------------------- |
+| `/healthz` | GET    | App health check for Azure monitoring |
+
+---
+
+## ⚙️ Project Setup
+
+### 1️⃣ Clone Repository
 
 ```bash
 git clone https://github.com/akishorekumar-1728/Azure_Cloud_dashboard.git
 cd Azure_Cloud_dashboard
 ```
 
-2️⃣ **Install Dependencies**
+---
+
+### 2️⃣ Create Virtual Environment
+
+```bash
+python -m venv venv
+venv\Scripts\activate   # Windows
+```
+
+---
+
+### 3️⃣ Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3️⃣ **Configure Azure Credentials**
-Create Azure Service Principal and set environment variables:
+---
+
+### 4️⃣ Configure Environment Variables
+
+Create `.env` file (for local development):
 
 ```
-AZURE_CLIENT_ID=
-AZURE_CLIENT_SECRET=
-AZURE_TENANT_ID=
-AZURE_SUBSCRIPTION_ID=
+AZURE_TENANT_ID=your_tenant_id
+AZURE_CLIENT_ID=your_client_id
+AZURE_CLIENT_SECRET=your_client_secret
+AZURE_SUBSCRIPTION_ID=your_subscription_id
+FLASK_SECRET_KEY=your_secret_key
 ```
 
-4️⃣ **Run the Application**
+⚠ In Azure App Service:
+Go to
+App Service → Settings → Environment Variables
+Add the same variables there.
+
+---
+
+### 5️⃣ Run Locally
 
 ```bash
 python app.py
 ```
 
-5️⃣ **Open Dashboard**
-In your browser:
-
+Open:
 
 ```
 http://127.0.0.1:5000
@@ -112,9 +175,53 @@ http://127.0.0.1:5000
 
 ---
 
-## **🎓 Use Case**
+### 6️⃣ Production Deployment (Azure)
 
-This dashboard helps administrators monitor Azure resources without logging into the Azure portal. It provides a quick overview of services like virtual machines, helping identify issues and reducing time for manual checks.([GitHub][1])
+* Create Azure App Service (Python 3.11)
+* Configure Startup Command:
+
+```
+gunicorn app:app
+```
+
+* Add Environment Variables in Azure
+* Enable Health Check: `/healthz`
+* Enable Application Insights
+
+---
+
+## 🌍 Live Deployment
+
+Production URL:
+
+```
+https://azure-cloud-dashboard-kishore-htfrhpezh3cvfrc7.centralindia-01.azurewebsites.net
+```
+
+Health Check:
+
+```
+/healthz
+```
+
+---
+
+## 🎯 Future Improvements
+
+* Azure Entra ID (OAuth) Login
+* Role-based Access Control
+* Activity Logs Viewer
+* CPU/Memory Monitoring Charts
+* Cost Monitoring Dashboard
+* Multi-user Management
+
+---
+
+## 👨‍💻 Author
+
+**A Kishore Kumar**
+Cloud & DevOps Enthusiast
+Microsoft Azure | Python | Flask
 
 ---
 
