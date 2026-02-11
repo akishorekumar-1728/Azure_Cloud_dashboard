@@ -1,20 +1,44 @@
-.env
-venv/
-__pycache__/
-*.pyc
-*.pem
-test-vm-1_key.pem
-# secrets
+# ==============================
+# 🔐 Secrets & Environment Files
+# ==============================
 .env
 *.env
+*.pem
+*.key
+test-vm-1_key.pem
 
-# python
+# ==============================
+# 🐍 Python
+# ==============================
 __pycache__/
 *.pyc
-.venv/
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual Environments
 venv/
+.venv/
 env/
 
-# flask
+# ==============================
+# 🔧 Flask
+# ==============================
 instance/
 
+# ==============================
+# 🧪 Testing / Cache
+# ==============================
+.pytest_cache/
+.coverage
+
+# ==============================
+# 🖥 OS Files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# ==============================
+# 📦 VS Code
+# ==============================
+.vscode/
