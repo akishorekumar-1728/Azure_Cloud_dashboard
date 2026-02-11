@@ -4,17 +4,15 @@ from azure.core.exceptions import HttpResponseError
 
 from azure.identity import ClientSecretCredential
 from azure.mgmt.compute import ComputeManagementClient
+from azure.mgmt.resource import ResourceManagementClient  # ✅ Step 7
 
 
 # ---------------- LOAD ENV (LOCAL ONLY) ----------------
-# On Azure App Service, settings come from "Configuration -> Application settings".
-# Avoid hard dependency on python-dotenv in production.
 if not os.getenv("WEBSITE_SITE_NAME"):
     try:
         from dotenv import load_dotenv
         load_dotenv()
     except Exception:
-        # If dotenv isn't installed locally, skip silently.
         pass
 
 
@@ -29,7 +27,6 @@ CLIENT_ID = os.getenv("AZURE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("AZURE_CLIENT_SECRET")
 SUBSCRIPTION_ID = os.getenv("AZURE_SUBSCRIPTION_ID")
 
-# Fail fast with clear message (shows in Log stream)
 missing = [k for k, v in {
     "AZURE_TENANT_ID": TENANT_ID,
     "AZURE_CLIENT_ID": CLIENT_ID,
@@ -50,11 +47,11 @@ credential = ClientSecretCredential(
 )
 
 compute_client = ComputeManagementClient(credential, SUBSCRIPTION_ID)
+resource_client = ResourceManagementClient(credential, SUBSCRIPTION_ID)  # ✅ Step 7
 
 
 # ---------------- HELPERS ----------------
 def extract_rg_from_id(resource_id: str) -> str:
-    # /subscriptions/<id>/resourceGroups/<rg>/providers/...
     try:
         return resource_id.split("/")[4]
     except Exception:
@@ -62,9 +59,6 @@ def extract_rg_from_id(resource_id: str) -> str:
 
 
 def get_power_state(resource_group: str, vm_name: str) -> str:
-    """
-    Returns: running / stopped / deallocated / starting / stopping / unknown
-    """
     instance = compute_client.virtual_machines.instance_view(resource_group, vm_name)
     for s in instance.statuses:
         if s.code and s.code.startswith("PowerState/"):
@@ -89,7 +83,6 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        # NOTE: Later we can replace with Azure Entra ID login
         if email == "admin@gmail.com" and password == "admin123":
             session["user"] = email
             return redirect(url_for("dashboard"))
@@ -113,7 +106,58 @@ def dashboard():
     return render_template("dashboard.html")
 
 
-# ---------------- API ROUTES ----------------
+# ---------------- STEP 7 APIs: RESOURCE GROUP EXPLORER ----------------
+@app.route("/api/resource-groups")
+def list_resource_groups():
+    if not require_login():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        rgs = []
+        for rg in resource_client.resource_groups.list():
+            rgs.append({
+                "name": rg.name,
+                "location": rg.location
+            })
+        # sort by name for UI
+        rgs.sort(key=lambda x: (x["name"] or "").lower())
+        return jsonify(rgs), 200
+
+    except HttpResponseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+
+@app.route("/api/resources")
+def list_resources_in_rg():
+    if not require_login():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        rg_name = request.args.get("rg")
+        if not rg_name:
+            return jsonify({"error": "rg is required"}), 400
+
+        items = []
+        for res in resource_client.resources.list_by_resource_group(rg_name):
+            items.append({
+                "name": res.name,
+                "type": res.type,
+                "location": res.location
+            })
+
+        # sort by type then name (nice for UI)
+        items.sort(key=lambda x: ((x["type"] or "").lower(), (x["name"] or "").lower()))
+        return jsonify(items), 200
+
+    except HttpResponseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+
+# ---------------- EXISTING VM APIs ----------------
 @app.route("/api/vms")
 def list_vms():
     if not require_login():
@@ -300,7 +344,6 @@ def vm_status_count():
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 
-# ---------------- LOCAL RUN (NOT USED ON AZURE) ----------------
+# ---------------- LOCAL RUN ----------------
 if __name__ == "__main__":
-    # Local only: http://127.0.0.1:5000
     app.run(host="127.0.0.1", port=5000, debug=True)
