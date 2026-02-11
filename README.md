@@ -105,6 +105,7 @@ python app.py
 5️⃣ **Open Dashboard**
 In your browser:
 
+
 ```
 http://127.0.0.1:5000
 ```
