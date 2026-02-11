@@ -1,133 +1,327 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Azure Cloud Dashboard</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f1b33;
+      --card:#0f2547;
+      --stroke:#1d3b66;
+      --text:#eaf2ff;
+      --muted:#a9c0e6;
+      --azure:#0078d4;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --radius:16px;
+      --radius-sm:12px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--font);
+      background:
+        radial-gradient(900px 400px at 15% 0%, rgba(0,120,212,.25), transparent 60%),
+        radial-gradient(900px 400px at 85% 10%, rgba(34,197,94,.12), transparent 55%),
+        var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:28px 18px 50px;
+    }
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:center;
+      flex-wrap:wrap;
+      padding:14px 16px;
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(15,27,51,.9), rgba(15,27,51,.55));
+      box-shadow:var(--shadow);
+    }
+    .brand{
+      display:flex; gap:12px; align-items:center;
+    }
+    .logo{
+      width:42px; height:42px; border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, #39b9ff, #0078d4 60%, #005a9e);
+      box-shadow:0 10px 22px rgba(0,120,212,.25);
+    }
+    .brand h1{font-size:18px; margin:0; letter-spacing:.2px}
+    .brand p{margin:2px 0 0; color:var(--muted); font-size:12px}
+    .actions{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .chip{
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      color:var(--muted);
+    }
+    a.link{
+      color:var(--text);
+      text-decoration:none;
+      padding:9px 12px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+    }
+    a.link:hover{border-color:rgba(0,120,212,.6)}
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:14px;
+      margin-top:16px;
+    }
+    .card{
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(15,37,71,.9), rgba(15,37,71,.55));
+      padding:14px;
+      box-shadow:var(--shadow);
+    }
+    .metric{
+      font-size:12px; color:var(--muted); margin-bottom:6px;
+    }
+    .value{
+      font-size:26px; font-weight:800; letter-spacing:.2px;
+    }
+    .value.ok{color:var(--ok)}
+    .value.bad{color:var(--bad)}
+    .value.mid{color:var(--warn)}
+    .tabs{
+      margin-top:16px;
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .tabbtn{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      cursor:pointer;
+      font-weight:600;
+    }
+    .tabbtn.active{
+      background:rgba(0,120,212,.18);
+      border-color:rgba(0,120,212,.6);
+    }
+    .panel{
+      margin-top:12px;
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      background:rgba(15,27,51,.55);
+      padding:14px;
+      box-shadow:var(--shadow);
+    }
+    .row{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin-bottom:12px;
+    }
+    input, select{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      outline:none;
+      min-width: 220px;
+    }
+    input::placeholder{color:rgba(169,192,230,.65)}
+    button{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      cursor:pointer;
+      font-weight:700;
+    }
+    button:hover{border-color:rgba(0,120,212,.6)}
+    button:disabled{opacity:.55; cursor:not-allowed}
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      background:rgba(0,0,0,.12);
+    }
+    th, td{
+      padding:12px;
+      border-bottom:1px solid rgba(29,59,102,.65);
+      font-size:14px;
+    }
+    th{color:var(--muted); text-align:left; background:rgba(0,0,0,.12)}
+    tr:last-child td{border-bottom:none}
+    .status{
+      font-weight:800;
+      text-transform:capitalize;
+    }
+    .running{color:var(--ok)}
+    .stopped, .deallocated{color:var(--bad)}
+    .unknown{color:var(--muted)}
+    .btnStart{background:rgba(34,197,94,.18); border-color:rgba(34,197,94,.45)}
+    .btnStop{background:rgba(239,68,68,.18); border-color:rgba(239,68,68,.45)}
+    .btnRestart{background:rgba(245,158,11,.18); border-color:rgba(245,158,11,.45)}
+    .btnDelete{background:rgba(239,68,68,.22); border-color:rgba(239,68,68,.6)}
+    .msg{
+      display:none;
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+    }
+    .msg.ok{border-color:rgba(34,197,94,.55)}
+    .msg.err{border-color:rgba(239,68,68,.55)}
+    @media (max-width: 900px){
+      .grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width: 520px){
+      .grid{grid-template-columns:1fr}
+      input, select{min-width: 100%}
+    }
+  </style>
 </head>
-
 <body>
-  <div class="navbar">
-    <div class="brand">
-      <span class="brand-dot"></span>
-      Azure Cloud Dashboard
-    </div>
-    <a class="nav-link" href="/logout">Logout</a>
-  </div>
-
-  <div class="container">
-    <div id="toast" class="toast"></div>
-
-    <!-- KPI -->
-    <div class="kpis">
-      <div class="kpi"><div class="t">TOTAL VMs</div><div class="v" id="k_total">-</div></div>
-      <div class="kpi"><div class="t">RUNNING</div><div class="v" id="k_running">-</div></div>
-      <div class="kpi"><div class="t">STOPPED</div><div class="v" id="k_stopped">-</div></div>
-      <div class="kpi"><div class="t">OTHER</div><div class="v" id="k_other">-</div></div>
-    </div>
-
-    <div class="card">
-      <div class="header-row">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
         <div>
-          <h2 class="h-title">Virtual Machines</h2>
-          
-        </div>
-
-        <div class="controls">
-          <input id="searchBox" class="input" style="min-width:240px;" type="text"
-                 placeholder="Search VM / Resource Group..." oninput="renderTable()" />
-
-          <select id="statusFilter" class="select" onchange="renderTable()">
-            <option value="all">All status</option>
-            <option value="running">Running</option>
-            <option value="stopped">Stopped</option>
-            <option value="deallocated">Deallocated</option>
-            <option value="unknown">Unknown</option>
-          </select>
-
-          <select id="sortBy" class="select" onchange="renderTable()">
-            <option value="name">Sort: Name</option>
-            <option value="status">Sort: Status</option>
-            <option value="resource_group">Sort: Resource Group</option>
-          </select>
-
-          <button class="btn-sm btn-refresh" onclick="refreshAll()">Refresh</button>
+          <h1>Azure Cloud Dashboard</h1>
+          <p>VM Control • Resource Groups • Monitoring Ready</p>
         </div>
       </div>
+      <div class="actions">
+        <span class="chip" id="chipStatus">Auto refresh: 20s</span>
+        <button onclick="refreshAll()">Refresh</button>
+        <a class="link" href="/logout">Logout</a>
+      </div>
+    </div>
 
-      <table class="table">
+    <div class="grid">
+      <div class="card">
+        <div class="metric">Total VMs</div>
+        <div class="value" id="m_total">-</div>
+      </div>
+      <div class="card">
+        <div class="metric">Running</div>
+        <div class="value ok" id="m_running">-</div>
+      </div>
+      <div class="card">
+        <div class="metric">Stopped/Deallocated</div>
+        <div class="value bad" id="m_stopped">-</div>
+      </div>
+      <div class="card">
+        <div class="metric">Other</div>
+        <div class="value mid" id="m_other">-</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tabbtn active" id="tabVms" onclick="showTab('vms')">Virtual Machines</button>
+      <button class="tabbtn" id="tabRg" onclick="showTab('rg')">Resource Groups</button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+
+    <!-- VMs PANEL -->
+    <div class="panel" id="panelVms">
+      <div class="row">
+        <input id="searchBox" type="text" placeholder="Search VM / Resource Group..." oninput="renderVms()" />
+        <select id="statusFilter" onchange="renderVms()">
+          <option value="all">All Status</option>
+          <option value="running">Running</option>
+          <option value="stopped">Stopped</option>
+          <option value="deallocated">Deallocated</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </div>
+
+      <table>
         <thead>
           <tr>
-            <th style="width:30%;">VM Name</th>
-            <th style="width:28%;">Resource Group</th>
-            <th style="width:18%;">Status</th>
-            <th style="width:24%;">Actions</th>
+            <th>VM Name</th>
+            <th>Resource Group</th>
+            <th>Status</th>
+            <th style="width: 340px;">Actions</th>
           </tr>
         </thead>
         <tbody id="vmTable"></tbody>
       </table>
     </div>
-  </div>
 
-  <!-- Modal -->
-  <div id="modalBg" class="modal-bg" onclick="hideModal()">
-    <div class="modal" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <div class="modal-title" id="modalTitle">VM Details</div>
-        <button class="close-btn" onclick="hideModal()">✕</button>
+    <!-- RG PANEL -->
+    <div class="panel" id="panelRg" style="display:none;">
+      <div class="row">
+        <select id="rgSelect" onchange="loadResources()">
+          <option value="">Select Resource Group</option>
+        </select>
+        <button onclick="loadResourceGroups()">Reload RGs</button>
       </div>
 
-      <div class="grid">
-        <div class="box"><div class="b-label">VM Name</div><div class="b-val" id="d_name">-</div></div>
-        <div class="box"><div class="b-label">Resource Group</div><div class="b-val" id="d_rg">-</div></div>
-        <div class="box"><div class="b-label">Location</div><div class="b-val" id="d_loc">-</div></div>
-        <div class="box"><div class="b-label">VM Size</div><div class="b-val" id="d_size">-</div></div>
-        <div class="box"><div class="b-label">OS Type</div><div class="b-val" id="d_os">-</div></div>
-        <div class="box"><div class="b-label">Power State</div><div class="b-val" id="d_state">-</div></div>
-      </div>
-
-      <div class="modal-actions">
-        <button class="m-btn m-start" onclick="modalAction('start')">Start</button>
-        <button class="m-btn m-restart" onclick="modalAction('restart')">Restart</button>
-        <button class="m-btn m-stop" onclick="modalAction('stop')">Stop</button>
-        <button class="m-btn m-delete" onclick="modalDelete()">Delete</button>
-      </div>
-
-      <div class="helper">Azure operations take time — status updates after refresh.</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Resource Name</th>
+            <th>Type</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody id="resTable"></tbody>
+      </table>
     </div>
   </div>
 
 <script>
 let ALL_VMS = [];
 let busyKey = null;
-let selectedRG = null;
-let selectedVM = null;
 
-function toast(text, type){
-  const t = document.getElementById("toast");
-  t.className = `toast ${type}`;
-  t.innerText = text;
-  t.style.display = "block";
-  setTimeout(()=> t.style.display="none", 3200);
+function showMsg(text, ok=true){
+  const el = document.getElementById("msg");
+  el.className = "msg " + (ok ? "ok" : "err");
+  el.style.display = "block";
+  el.innerText = text;
+  setTimeout(()=>{ el.style.display="none"; }, 3200);
 }
 
-function chip(status){
-  const s = (status || "unknown");
-  return `<span class="chip ${s}"><span class="dot"></span>${s}</span>`;
+function showTab(tab){
+  document.getElementById("tabVms").classList.toggle("active", tab==="vms");
+  document.getElementById("tabRg").classList.toggle("active", tab==="rg");
+  document.getElementById("panelVms").style.display = (tab==="vms") ? "block" : "none";
+  document.getElementById("panelRg").style.display = (tab==="rg") ? "block" : "none";
+  if(tab==="rg"){ loadResourceGroups(); }
 }
 
-async function refreshKPIs(){
+async function refreshAll(){
+  await Promise.all([loadCounts(), loadVMs()]);
+}
+
+async function loadCounts(){
   try{
     const res = await fetch("/api/vm/status-count");
     const data = await res.json();
     if(!res.ok) throw new Error(data.error || "Failed to load counts");
-
-    document.getElementById("k_total").innerText = data.total ?? "-";
-    document.getElementById("k_running").innerText = data.running ?? "-";
-    document.getElementById("k_stopped").innerText = data.stopped ?? "-";
-    document.getElementById("k_other").innerText = data.other ?? "-";
-  }catch(err){
-    toast(err.message, "error");
+    document.getElementById("m_total").innerText = data.total ?? "-";
+    document.getElementById("m_running").innerText = data.running ?? "-";
+    document.getElementById("m_stopped").innerText = data.stopped ?? "-";
+    document.getElementById("m_other").innerText = data.other ?? "-";
+  }catch(e){
+    // don't spam
   }
 }
 
@@ -137,22 +331,20 @@ async function loadVMs(){
     const data = await res.json();
     if(!res.ok) throw new Error(data.error || "Failed to load VMs");
     ALL_VMS = Array.isArray(data) ? data : [];
-    renderTable();
-  }catch(err){
-    toast(err.message, "error");
+    renderVms();
+  }catch(e){
+    showMsg(e.message, false);
   }
 }
 
-function renderTable(){
+function renderVms(){
   const tbody = document.getElementById("vmTable");
   tbody.innerHTML = "";
 
-  const q = document.getElementById("searchBox").value.trim().toLowerCase();
+  const q = (document.getElementById("searchBox").value || "").trim().toLowerCase();
   const filter = document.getElementById("statusFilter").value;
-  const sortBy = document.getElementById("sortBy").value;
 
   let vms = [...ALL_VMS];
-
   if(q){
     vms = vms.filter(vm =>
       (vm.name||"").toLowerCase().includes(q) ||
@@ -162,28 +354,24 @@ function renderTable(){
   if(filter !== "all"){
     vms = vms.filter(vm => (vm.status || "unknown") === filter);
   }
-  vms.sort((a,b)=>{
-    const A = (a[sortBy] || "").toString().toLowerCase();
-    const B = (b[sortBy] || "").toString().toLowerCase();
-    return A.localeCompare(B);
-  });
+
+  vms.sort((a,b)=> (a.name||"").localeCompare(b.name||""));
 
   vms.forEach(vm=>{
     const key = `${vm.resource_group}:${vm.name}`;
     const disabled = (busyKey === key);
+    const st = vm.status || "unknown";
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td><span class="vm-link" onclick="openDetails('${vm.resource_group}','${vm.name}')">${vm.name}</span></td>
+      <td>${vm.name}</td>
       <td>${vm.resource_group}</td>
-      <td>${chip(vm.status)}</td>
+      <td class="status ${st}">${st}</td>
       <td>
-        <div class="actions">
-          <button class="a-btn a-start" ${disabled?"disabled":""} onclick="vmAction('start','${vm.resource_group}','${vm.name}')">Start</button>
-          <button class="a-btn a-restart" ${disabled?"disabled":""} onclick="vmAction('restart','${vm.resource_group}','${vm.name}')">Restart</button>
-          <button class="a-btn a-stop" ${disabled?"disabled":""} onclick="vmAction('stop','${vm.resource_group}','${vm.name}')">Stop</button>
-          <button class="a-btn a-delete" ${disabled?"disabled":""} onclick="deleteVM('${vm.resource_group}','${vm.name}')">Delete</button>
-        </div>
+        <button class="btnStart" ${disabled?"disabled":""} onclick="vmAction('start','${vm.resource_group}','${vm.name}')">Start</button>
+        <button class="btnStop" ${disabled?"disabled":""} onclick="vmAction('stop','${vm.resource_group}','${vm.name}')">Stop</button>
+        <button class="btnRestart" ${disabled?"disabled":""} onclick="vmAction('restart','${vm.resource_group}','${vm.name}')">Restart</button>
+        <button class="btnDelete" ${disabled?"disabled":""} onclick="vmDelete('${vm.resource_group}','${vm.name}')">Delete</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -193,89 +381,79 @@ function renderTable(){
 async function vmAction(action, rg, name){
   const key = `${rg}:${name}`;
   busyKey = key;
-  renderTable();
+  renderVms();
 
   try{
-    const res = await fetch(`/api/vm/${action}`,{
+    const res = await fetch(`/api/vm/${action}`, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ resource_group: rg, vm_name: name })
     });
     const data = await res.json();
     if(!res.ok) throw new Error(data.error || "Action failed");
-
-    toast(data.message, "success");
+    showMsg(data.message || "Done", true);
     setTimeout(refreshAll, 2500);
-  }catch(err){
-    toast(err.message, "error");
+  }catch(e){
+    showMsg(e.message, false);
   }finally{
     busyKey = null;
-    renderTable();
+    renderVms();
   }
 }
 
-async function deleteVM(rg, name){
-  const ok = confirm(`Are you sure you want to DELETE VM: ${name}?`);
+function vmDelete(rg, name){
+  const ok = confirm(`DELETE VM: ${name} ?`);
   if(!ok) return;
   vmAction("delete", rg, name);
 }
 
-/* Modal */
-function showModal(){ document.getElementById("modalBg").style.display="flex"; }
-function hideModal(){ document.getElementById("modalBg").style.display="none"; }
-function setD(id,val){ document.getElementById(id).innerText = (val ?? "-"); }
-
-async function openDetails(rg, name){
-  selectedRG = rg;
-  selectedVM = name;
-
-  document.getElementById("modalTitle").innerText = `VM Details: ${name}`;
-  setD("d_name", name);
-  setD("d_rg", rg);
-  setD("d_loc", "Loading...");
-  setD("d_size", "Loading...");
-  setD("d_os", "Loading...");
-  setD("d_state", "Loading...");
-  showModal();
-
+/* ---------- RG EXPLORER ---------- */
+async function loadResourceGroups(){
   try{
-    const res = await fetch(`/api/vm/details?resource_group=${encodeURIComponent(rg)}&vm_name=${encodeURIComponent(name)}`);
+    const res = await fetch("/api/resource-groups");
     const data = await res.json();
-    if(!res.ok) throw new Error(data.error || "Failed to load details");
-
-    setD("d_name", data.name);
-    setD("d_rg", data.resource_group);
-    setD("d_loc", data.location);
-    setD("d_size", data.vm_size);
-    setD("d_os", data.os_type);
-    setD("d_state", data.power_state);
-  }catch(err){
-    toast(err.message, "error");
-    setD("d_loc","-"); setD("d_size","-"); setD("d_os","-"); setD("d_state","-");
+    if(!res.ok) throw new Error(data.error || "Failed to load resource groups");
+    const sel = document.getElementById("rgSelect");
+    sel.innerHTML = `<option value="">Select Resource Group</option>`;
+    data.forEach(rg=>{
+      const opt = document.createElement("option");
+      opt.value = rg.name;
+      opt.textContent = `${rg.name} (${rg.location || "-"})`;
+      sel.appendChild(opt);
+    });
+  }catch(e){
+    showMsg(e.message, false);
   }
 }
 
-async function modalAction(action){
-  if(!selectedRG || !selectedVM) return;
-  await vmAction(action, selectedRG, selectedVM);
-  setTimeout(()=> openDetails(selectedRG, selectedVM), 2000);
+async function loadResources(){
+  const rg = document.getElementById("rgSelect").value;
+  const tbody = document.getElementById("resTable");
+  tbody.innerHTML = "";
+  if(!rg) return;
+
+  try{
+    const res = await fetch(`/api/resources?rg=${encodeURIComponent(rg)}`);
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || "Failed to load resources");
+
+    data.forEach(r=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.name}</td>
+        <td>${r.type}</td>
+        <td>${r.location || "-"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }catch(e){
+    showMsg(e.message, false);
+  }
 }
 
-async function modalDelete(){
-  if(!selectedRG || !selectedVM) return;
-  const ok = confirm(`Are you sure you want to DELETE VM: ${selectedVM}?`);
-  if(!ok) return;
-  await vmAction("delete", selectedRG, selectedVM);
-  hideModal();
-}
-
-async function refreshAll(){
-  await Promise.all([refreshKPIs(), loadVMs()]);
-}
-
+/* initial */
 refreshAll();
 setInterval(refreshAll, 20000);
 </script>
-
 </body>
 </html>
