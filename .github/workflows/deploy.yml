@@ -1,6 +1,7 @@
 name: Deploy Flask App to Azure Web App
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -10,8 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
