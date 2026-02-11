@@ -18,11 +18,10 @@ if not os.getenv("WEBSITE_SITE_NAME"):
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "secret123")
 
-# ---------------- HEALTH CHECK (IMPORTANT FOR AZURE) ----------------
-@app.route("/healthz")
+# ---------------- HEALTH CHECK (NO LOGIN REQUIRED) ----------------
+@app.get("/healthz")
 def healthz():
     return jsonify({"status": "ok"}), 200
-
 
 # ---------------- AZURE AUTH ----------------
 TENANT_ID = os.getenv("AZURE_TENANT_ID")
@@ -51,6 +50,7 @@ resource_client = ResourceManagementClient(credential, SUBSCRIPTION_ID)
 
 # ---------------- HELPERS ----------------
 def extract_rg_from_id(resource_id: str) -> str:
+    # /subscriptions/<id>/resourceGroups/<rg>/providers/...
     try:
         return resource_id.split("/")[4]
     except Exception:
@@ -67,7 +67,7 @@ def require_login() -> bool:
     return "user" in session
 
 # ---------------- ROUTES ----------------
-@app.route("/")
+@app.get("/")
 def home():
     return redirect(url_for("login"))
 
@@ -85,19 +85,19 @@ def login():
 
     return render_template("login.html")
 
-@app.route("/logout")
+@app.get("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
 
-@app.route("/dashboard")
+@app.get("/dashboard")
 def dashboard():
     if not require_login():
         return redirect(url_for("login"))
     return render_template("dashboard.html")
 
 # ---------------- STEP 7: RESOURCE GROUP APIs ----------------
-@app.route("/api/resource-groups")
+@app.get("/api/resource-groups")
 def list_resource_groups():
     if not require_login():
         return jsonify({"error": "Unauthorized"}), 401
@@ -110,7 +110,7 @@ def list_resource_groups():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-@app.route("/api/resources")
+@app.get("/api/resources")
 def list_resources_in_rg():
     if not require_login():
         return jsonify({"error": "Unauthorized"}), 401
@@ -131,7 +131,7 @@ def list_resources_in_rg():
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 # ---------------- VM APIs ----------------
-@app.route("/api/vms")
+@app.get("/api/vms")
 def list_vms():
     if not require_login():
         return jsonify({"error": "Unauthorized"}), 401
@@ -152,7 +152,152 @@ def list_vms():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-# (keep your other VM endpoints same: details/start/stop/restart/delete/status-count)
+@app.get("/api/vm/details")
+def vm_details():
+    if not require_login():
+        return jsonify({"error": "Unauthorized"}), 401
 
+    try:
+        rg = request.args.get("resource_group")
+        vm_name = request.args.get("vm_name")
+        if not rg or not vm_name:
+            return jsonify({"error": "resource_group and vm_name are required"}), 400
+
+        vm = compute_client.virtual_machines.get(rg, vm_name)
+        power_state = get_power_state(rg, vm_name)
+
+        vm_size = vm.hardware_profile.vm_size if vm.hardware_profile else None
+
+        os_type = None
+        if vm.storage_profile and vm.storage_profile.os_disk and vm.storage_profile.os_disk.os_type:
+            os_type = vm.storage_profile.os_disk.os_type.value
+
+        return jsonify({
+            "name": vm.name,
+            "resource_group": rg,
+            "location": vm.location,
+            "vm_size": vm_size,
+            "os_type": os_type,
+            "power_state": power_state
+        }), 200
+
+    except HttpResponseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+@app.post("/api/vm/start")
+def start_vm():
+    if not require_login():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        data = request.json or {}
+        rg = data.get("resource_group")
+        vm_name = data.get("vm_name")
+        if not rg or not vm_name:
+            return jsonify({"error": "resource_group and vm_name are required"}), 400
+
+        compute_client.virtual_machines.begin_start(rg, vm_name)
+        return jsonify({"message": "VM start initiated"}), 200
+
+    except HttpResponseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+@app.post("/api/vm/stop")
+def stop_vm():
+    if not require_login():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        data = request.json or {}
+        rg = data.get("resource_group")
+        vm_name = data.get("vm_name")
+        if not rg or not vm_name:
+            return jsonify({"error": "resource_group and vm_name are required"}), 400
+
+        compute_client.virtual_machines.begin_deallocate(rg, vm_name)
+        return jsonify({"message": "VM stop initiated"}), 200
+
+    except HttpResponseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+@app.post("/api/vm/restart")
+def restart_vm():
+    if not require_login():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        data = request.json or {}
+        rg = data.get("resource_group")
+        vm_name = data.get("vm_name")
+        if not rg or not vm_name:
+            return jsonify({"error": "resource_group and vm_name are required"}), 400
+
+        compute_client.virtual_machines.begin_restart(rg, vm_name)
+        return jsonify({"message": "VM restart initiated"}), 200
+
+    except HttpResponseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+@app.post("/api/vm/delete")
+def delete_vm():
+    if not require_login():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        data = request.json or {}
+        rg = data.get("resource_group")
+        vm_name = data.get("vm_name")
+        if not rg or not vm_name:
+            return jsonify({"error": "resource_group and vm_name are required"}), 400
+
+        compute_client.virtual_machines.begin_delete(rg, vm_name)
+        return jsonify({"message": "VM delete initiated"}), 200
+
+    except HttpResponseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+@app.get("/api/vm/status-count")
+def vm_status_count():
+    if not require_login():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        total = running = stopped = other = 0
+
+        for vm in compute_client.virtual_machines.list_all():
+            total += 1
+            rg = extract_rg_from_id(vm.id)
+            state = get_power_state(rg, vm.name) if rg else "unknown"
+
+            if state == "running":
+                running += 1
+            elif state in ("stopped", "deallocated"):
+                stopped += 1
+            else:
+                other += 1
+
+        return jsonify({
+            "total": total,
+            "running": running,
+            "stopped": stopped,
+            "other": other
+        }), 200
+
+    except HttpResponseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+# ---------------- LOCAL RUN ----------------
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
