@@ -1,28 +1,60 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session
-from dotenv import load_dotenv
-from azure.core.exceptions import HttpResponseError
 import os
+from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from azure.core.exceptions import HttpResponseError
 
 from azure.identity import ClientSecretCredential
 from azure.mgmt.compute import ComputeManagementClient
 
-load_dotenv()
 
+# ---------------- LOAD ENV (LOCAL ONLY) ----------------
+# On Azure App Service, settings come from "Configuration -> Application settings".
+# Avoid hard dependency on python-dotenv in production.
+if not os.getenv("WEBSITE_SITE_NAME"):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except Exception:
+        # If dotenv isn't installed locally, skip silently.
+        pass
+
+
+# ---------------- FLASK APP ----------------
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "secret123")
 
-# ---------------- AZURE AUTH ----------------
+
+# ---------------- AZURE AUTH (SERVICE PRINCIPAL) ----------------
+TENANT_ID = os.getenv("AZURE_TENANT_ID")
+CLIENT_ID = os.getenv("AZURE_CLIENT_ID")
+CLIENT_SECRET = os.getenv("AZURE_CLIENT_SECRET")
+SUBSCRIPTION_ID = os.getenv("AZURE_SUBSCRIPTION_ID")
+
+# Fail fast with clear message (shows in Log stream)
+missing = [k for k, v in {
+    "AZURE_TENANT_ID": TENANT_ID,
+    "AZURE_CLIENT_ID": CLIENT_ID,
+    "AZURE_CLIENT_SECRET": CLIENT_SECRET,
+    "AZURE_SUBSCRIPTION_ID": SUBSCRIPTION_ID,
+}.items() if not v]
+
+if missing:
+    raise RuntimeError(
+        "Missing Azure environment variables in App Service Configuration: "
+        + ", ".join(missing)
+    )
+
 credential = ClientSecretCredential(
-    tenant_id=os.getenv("AZURE_TENANT_ID"),
-    client_id=os.getenv("AZURE_CLIENT_ID"),
-    client_secret=os.getenv("AZURE_CLIENT_SECRET")
+    tenant_id=TENANT_ID,
+    client_id=CLIENT_ID,
+    client_secret=CLIENT_SECRET
 )
 
-subscription_id = os.getenv("AZURE_SUBSCRIPTION_ID")
-compute_client = ComputeManagementClient(credential, subscription_id)
+compute_client = ComputeManagementClient(credential, SUBSCRIPTION_ID)
+
 
 # ---------------- HELPERS ----------------
 def extract_rg_from_id(resource_id: str) -> str:
+    # /subscriptions/<id>/resourceGroups/<rg>/providers/...
     try:
         return resource_id.split("/")[4]
     except Exception:
@@ -30,6 +62,9 @@ def extract_rg_from_id(resource_id: str) -> str:
 
 
 def get_power_state(resource_group: str, vm_name: str) -> str:
+    """
+    Returns: running / stopped / deallocated / starting / stopping / unknown
+    """
     instance = compute_client.virtual_machines.instance_view(resource_group, vm_name)
     for s in instance.statuses:
         if s.code and s.code.startswith("PowerState/"):
@@ -37,7 +72,7 @@ def get_power_state(resource_group: str, vm_name: str) -> str:
     return "unknown"
 
 
-def require_login():
+def require_login() -> bool:
     return "user" in session
 
 
@@ -54,11 +89,12 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
+        # NOTE: Later we can replace with Azure Entra ID login
         if email == "admin@gmail.com" and password == "admin123":
             session["user"] = email
             return redirect(url_for("dashboard"))
-        else:
-            return render_template("login.html", error="Invalid credentials")
+
+        return render_template("login.html", error="Invalid credentials")
 
     return render_template("login.html")
 
@@ -264,6 +300,7 @@ def vm_status_count():
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 
-# ---------------- RUN ----------------
+# ---------------- LOCAL RUN (NOT USED ON AZURE) ----------------
 if __name__ == "__main__":
+    # Local only: http://127.0.0.1:5000
     app.run(host="127.0.0.1", port=5000, debug=True)
