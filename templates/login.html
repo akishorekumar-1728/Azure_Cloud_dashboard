@@ -1,121 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Azure Cloud VM Dashboard - Login</title>
-
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            font-family: "Segoe UI", Tahoma, sans-serif;
-            background: linear-gradient(135deg, #0078D4, #00A4EF);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .login-container {
-            width: 380px;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        .project-title {
-            text-align: center;
-            font-size: 22px;
-            font-weight: bold;
-            color: #0078D4;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            text-align: center;
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 25px;
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        label {
-            font-size: 14px;
-            color: #444;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            margin-bottom: 15px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #0078D4;
-            box-shadow: 0 0 5px rgba(0,120,212,0.4);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #0078D4;
-            color: white;
-            font-size: 15px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #005A9E;
-        }
-
-        .footer-text {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 12px;
-            color: #888;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Azure Cloud Dashboard | Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<div class="login-container">
-
-    <!-- PROJECT TITLE -->
-    <div class="project-title">
-        ☁ Azure Cloud VM Dashboard
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logo">Az</div>
+      <div>
+        <h2 class="login-title">Azure Cloud Dashboard</h2>
+        <div class="login-sub">Sign in to manage your Azure Virtual Machines.</div>
+      </div>
     </div>
-    <div class="subtitle">
-        Secure VM Management Portal
-    </div>
 
-    <!-- LOGIN TITLE -->
-    <h2>Login</h2>
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
 
     <form method="POST">
-        <label>Email</label>
-        <input type="text" name="email" required>
+      <div style="margin-top:12px;">
+        <label class="label">Email</label>
+        <input class="input" type="email" name="email" placeholder="admin@gmail.com" required>
+      </div>
 
-        <label>Password</label>
-        <input type="password" name="password" required>
+      <div style="margin-top:12px;">
+        <label class="label">Password</label>
+        <input class="input" type="password" name="password" placeholder="admin123" required>
+      </div>
 
-        <button type="submit">Sign In</button>
+      <button class="btn btn-wide btn-azure" type="submit">Login</button>
     </form>
 
-    <div class="footer-text">
-        © 2026 Microsoft Azure Project
+    <div class="login-sub" style="margin-top:14px;">
+      Tip: Later we can upgrade this login to <b>Azure Entra ID</b>.
     </div>
-
+  </div>
 </div>
 
 </body>
