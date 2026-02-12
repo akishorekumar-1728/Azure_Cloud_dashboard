@@ -6,7 +6,6 @@ from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 
 # ---------------- LOAD ENV (LOCAL ONLY) ----------------
-# In Azure App Service, env comes from Configuration -> Environment variables
 if not os.getenv("WEBSITE_SITE_NAME"):
     try:
         from dotenv import load_dotenv
@@ -41,7 +40,7 @@ missing = [k for k, v in {
 }.items() if not v]
 
 if missing:
-    raise RuntimeError("Missing Azure env vars in App Service: " + ", ".join(missing))
+    raise RuntimeError("Missing Azure env vars: " + ", ".join(missing))
 
 credential = ClientSecretCredential(
     tenant_id=TENANT_ID,
@@ -80,7 +79,6 @@ def login():
         email = (request.form.get("email") or "").strip()
         password = (request.form.get("password") or "").strip()
 
-        # ✅ Now secure: values come from Azure Environment Variables
         if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
             session["user"] = email
             return redirect(url_for("dashboard"))
@@ -151,37 +149,6 @@ def list_vms():
                 "location": getattr(vm, "location", None)
             })
         return jsonify(vm_list), 200
-    except HttpResponseError as e:
-        return jsonify({"error": str(e)}), 500
-    except Exception as e:
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
-
-@app.get("/api/vm/details")
-def vm_details():
-    if not require_login():
-        return jsonify({"error": "Unauthorized"}), 401
-    try:
-        rg = request.args.get("resource_group")
-        vm_name = request.args.get("vm_name")
-        if not rg or not vm_name:
-            return jsonify({"error": "resource_group and vm_name are required"}), 400
-
-        vm = compute_client.virtual_machines.get(rg, vm_name)
-        power_state = get_power_state(rg, vm_name)
-
-        vm_size = vm.hardware_profile.vm_size if vm.hardware_profile else None
-        os_type = None
-        if vm.storage_profile and vm.storage_profile.os_disk and vm.storage_profile.os_disk.os_type:
-            os_type = vm.storage_profile.os_disk.os_type.value
-
-        return jsonify({
-            "name": vm.name,
-            "resource_group": rg,
-            "location": vm.location,
-            "vm_size": vm_size,
-            "os_type": os_type,
-            "power_state": power_state
-        }), 200
     except HttpResponseError as e:
         return jsonify({"error": str(e)}), 500
     except Exception as e:
@@ -282,7 +249,40 @@ def vm_status_count():
         return jsonify({"error": str(e)}), 500
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+@app.get("/api/vm/details")
+def vm_details():
+    if not require_login():
+        return jsonify({"error": "Unauthorized"}), 401
+    try:
+        rg = request.args.get("resource_group")
+        vm_name = request.args.get("vm_name")
+        if not rg or not vm_name:
+            return jsonify({"error": "resource_group and vm_name are required"}), 400
 
-# ---------------- LOCAL RUN ----------------
+        vm = compute_client.virtual_machines.get(rg, vm_name)
+        power_state = get_power_state(rg, vm_name)
+
+        vm_size = vm.hardware_profile.vm_size if vm.hardware_profile else None
+
+        os_type = None
+        if vm.storage_profile and vm.storage_profile.os_disk and vm.storage_profile.os_disk.os_type:
+            raw = vm.storage_profile.os_disk.os_type
+            os_type = raw.value if hasattr(raw, "value") else str(raw)
+
+        return jsonify({
+            "name": vm.name,
+            "resource_group": rg,
+            "location": vm.location,
+            "vm_size": vm_size,
+            "os_type": os_type,
+            "power_state": power_state
+        }), 200
+
+    except HttpResponseError as e:
+        return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+# ---------------- LOCAL / VM RUN ----------------
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)

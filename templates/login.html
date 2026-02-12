@@ -21,15 +21,16 @@
       <div class="error">{{ error }}</div>
     {% endif %}
 
-    <form method="POST">
+    <!-- ✅ Prevent autofill + remove demo placeholders -->
+    <form method="POST" autocomplete="off">
       <div style="margin-top:12px;">
         <label class="label">Email</label>
-        <input class="input" type="email" name="email" placeholder="admin@gmail.com" required>
+        <input class="input" type="email" name="email" placeholder="Enter email" autocomplete="off" value="" required>
       </div>
 
       <div style="margin-top:12px;">
         <label class="label">Password</label>
-        <input class="input" type="password" name="password" placeholder="admin123" required>
+        <input class="input" type="password" name="password" placeholder="Enter password" autocomplete="new-password" value="" required>
       </div>
 
       <button class="btn btn-wide btn-azure" type="submit">Login</button>

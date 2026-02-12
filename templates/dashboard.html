@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Azure Cloud Dashboard</title>
+
   <style>
     :root{
       --bg:#0b1220;
@@ -18,7 +19,6 @@
       --bad:#ef4444;
       --shadow: 0 12px 30px rgba(0,0,0,.35);
       --radius:16px;
-      --radius-sm:12px;
       --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
     *{box-sizing:border-box}
@@ -31,176 +31,172 @@
         var(--bg);
       color:var(--text);
     }
-    .wrap{
-      max-width:1100px;
-      margin:0 auto;
-      padding:28px 18px 50px;
-    }
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 50px;}
     .topbar{
-      display:flex;
-      justify-content:space-between;
-      gap:14px;
-      align-items:center;
-      flex-wrap:wrap;
-      padding:14px 16px;
-      border:1px solid var(--stroke);
-      border-radius:var(--radius);
+      display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;
+      padding:14px 16px;border:1px solid var(--stroke);border-radius:var(--radius);
       background:linear-gradient(180deg, rgba(15,27,51,.9), rgba(15,27,51,.55));
       box-shadow:var(--shadow);
     }
-    .brand{
-      display:flex; gap:12px; align-items:center;
-    }
+    .brand{display:flex; gap:12px; align-items:center;}
     .logo{
       width:42px; height:42px; border-radius:14px;
       background: radial-gradient(circle at 30% 30%, #39b9ff, #0078d4 60%, #005a9e);
       box-shadow:0 10px 22px rgba(0,120,212,.25);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:1000; color:#fff; font-size:20px;
+      user-select:none;
     }
     .brand h1{font-size:18px; margin:0; letter-spacing:.2px}
     .brand p{margin:2px 0 0; color:var(--muted); font-size:12px}
-    .actions{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-    }
+    .actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
     .chip{
-      font-size:12px;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.18);
-      color:var(--muted);
+      font-size:12px;padding:8px 10px;border-radius:999px;border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);color:var(--muted);
     }
     a.link{
-      color:var(--text);
-      text-decoration:none;
-      padding:9px 12px;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.18);
+      color:var(--text);text-decoration:none;padding:9px 12px;border-radius:12px;
+      border:1px solid var(--stroke);background:rgba(0,0,0,.18);
     }
     a.link:hover{border-color:rgba(0,120,212,.6)}
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap:14px;
-      margin-top:16px;
-    }
+
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px;}
     .card{
-      border:1px solid var(--stroke);
-      border-radius:var(--radius);
+      border:1px solid var(--stroke);border-radius:var(--radius);
       background:linear-gradient(180deg, rgba(15,37,71,.9), rgba(15,37,71,.55));
-      padding:14px;
-      box-shadow:var(--shadow);
+      padding:14px;box-shadow:var(--shadow);
     }
-    .metric{
-      font-size:12px; color:var(--muted); margin-bottom:6px;
-    }
+    .metric{font-size:12px; color:var(--muted); margin-bottom:6px;}
     .value{
-      font-size:26px; font-weight:800; letter-spacing:.2px;
+      font-size:34px;font-weight:900;letter-spacing:.2px;color:#fff;
+      text-shadow:0 2px 14px rgba(0,0,0,.35);
     }
     .value.ok{color:var(--ok)}
     .value.bad{color:var(--bad)}
     .value.mid{color:var(--warn)}
-    .tabs{
-      margin-top:16px;
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
+
+    .tabs{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;}
     .tabbtn{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      cursor:pointer;
-      font-weight:600;
+      padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);color:var(--text);cursor:pointer;font-weight:700;
     }
-    .tabbtn.active{
-      background:rgba(0,120,212,.18);
-      border-color:rgba(0,120,212,.6);
-    }
+    .tabbtn.active{background:rgba(0,120,212,.18);border-color:rgba(0,120,212,.6);}
+
     .panel{
-      margin-top:12px;
-      border:1px solid var(--stroke);
-      border-radius:var(--radius);
-      background:rgba(15,27,51,.55);
-      padding:14px;
-      box-shadow:var(--shadow);
+      margin-top:12px;border:1px solid var(--stroke);border-radius:var(--radius);
+      background:rgba(15,27,51,.55);padding:14px;box-shadow:var(--shadow);
     }
-    .row{
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      margin-bottom:12px;
-    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+
     input, select{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      outline:none;
-      min-width: 220px;
+      padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);
+      background:rgba(10,16,30,.65);color:var(--text);outline:none;min-width:220px;
     }
     input::placeholder{color:rgba(169,192,230,.65)}
+    select option{background-color:#0b1b35 !important;color:#eaf2ff !important;}
+
     button{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      cursor:pointer;
-      font-weight:700;
+      padding:10px 12px;border-radius:12px;border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);color:var(--text);cursor:pointer;font-weight:800;
     }
     button:hover{border-color:rgba(0,120,212,.6)}
     button:disabled{opacity:.55; cursor:not-allowed}
+
     table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      overflow:hidden;
-      border:1px solid var(--stroke);
-      border-radius:16px;
-      background:rgba(0,0,0,.12);
+      width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;
+      border:1px solid var(--stroke);border-radius:16px;background:rgba(0,0,0,.12);
     }
-    th, td{
-      padding:12px;
-      border-bottom:1px solid rgba(29,59,102,.65);
-      font-size:14px;
-    }
-    th{color:var(--muted); text-align:left; background:rgba(0,0,0,.12)}
+    th, td{padding:12px;border-bottom:1px solid rgba(29,59,102,.65);font-size:14px;}
+    th{color:var(--muted);text-align:left;background:rgba(0,0,0,.12)}
     tr:last-child td{border-bottom:none}
-    .status{
-      font-weight:800;
-      text-transform:capitalize;
-    }
+
+    .status{font-weight:900;text-transform:capitalize;}
     .running{color:var(--ok)}
-    .stopped, .deallocated{color:var(--bad)}
+    .stopped,.deallocated{color:var(--bad)}
     .unknown{color:var(--muted)}
+
     .btnStart{background:rgba(34,197,94,.18); border-color:rgba(34,197,94,.45)}
     .btnStop{background:rgba(239,68,68,.18); border-color:rgba(239,68,68,.45)}
     .btnRestart{background:rgba(245,158,11,.18); border-color:rgba(245,158,11,.45)}
     .btnDelete{background:rgba(239,68,68,.22); border-color:rgba(239,68,68,.6)}
+
     .msg{
-      display:none;
-      margin-top:14px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.18);
+      display:none;margin-top:14px;padding:12px 14px;border-radius:14px;
+      border:1px solid var(--stroke);background:rgba(0,0,0,.18);
     }
     .msg.ok{border-color:rgba(34,197,94,.55)}
     .msg.err{border-color:rgba(239,68,68,.55)}
-    @media (max-width: 900px){
-      .grid{grid-template-columns:repeat(2,1fr)}
+
+    /* ✅ Modal styles */
+    #vmModalBg{
+      display:none; position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      align-items:center; justify-content:center;
+      padding:18px;
+      z-index:999;
     }
-    @media (max-width: 520px){
+    #vmModal{
+      width: min(720px, 96vw);
+      background: rgba(15,27,51,.95);
+      border: 1px solid rgba(29,59,102,.85);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.5);
+    }
+    .modal-header{
+      display:flex; justify-content:space-between; align-items:center; gap: 12px;
+    }
+    .modal-title{ font-size: 18px; font-weight: 1000; }
+    .close-btn{
+      width: 40px; height: 40px;
+      border-radius: 14px;
+      border: 1px solid rgba(29,59,102,.85);
+      background: rgba(0,0,0,.15);
+      color: var(--text);
+      cursor:pointer;
+      font-size: 18px;
+      font-weight: 1000;
+    }
+    .close-btn:hover{ border-color: rgba(0,120,212,.6); }
+    #vmModalContent{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 640px){
+      #vmModalContent{ grid-template-columns: 1fr; }
+    }
+    .info-box{
+      border:1px solid rgba(29,59,102,.75);
+      border-radius:14px;
+      padding:12px;
+      background:rgba(0,0,0,.18);
+    }
+    .info-label{ color:var(--muted); font-size:12px; font-weight:900; }
+    .info-val{ margin-top:6px; font-weight:1000; }
+
+    .vmLink{
+      color:#39b9ff;
+      font-weight:1000;
+      text-decoration:none;
+      cursor:pointer;
+    }
+    .vmLink:hover{ text-decoration: underline; }
+
+    @media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:520px){
       .grid{grid-template-columns:1fr}
-      input, select{min-width: 100%}
+      input,select{min-width:100%}
     }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="topbar">
       <div class="brand">
-        <div class="logo"></div>
+        <div class="logo">A</div>
         <div>
           <h1>Azure Cloud Dashboard</h1>
           <p>VM Control • Resource Groups • Monitoring Ready</p>
@@ -208,7 +204,7 @@
       </div>
       <div class="actions">
         <span class="chip" id="chipStatus">Auto refresh: 20s</span>
-        <button onclick="refreshAll()">Refresh</button>
+        <button id="refreshBtn" type="button">Refresh</button>
         <a class="link" href="/logout">Logout</a>
       </div>
     </div>
@@ -239,7 +235,6 @@
 
     <div class="msg" id="msg"></div>
 
-    <!-- VMs PANEL -->
     <div class="panel" id="panelVms">
       <div class="row">
         <input id="searchBox" type="text" placeholder="Search VM / Resource Group..." oninput="renderVms()" />
@@ -265,13 +260,12 @@
       </table>
     </div>
 
-    <!-- RG PANEL -->
     <div class="panel" id="panelRg" style="display:none;">
       <div class="row">
         <select id="rgSelect" onchange="loadResources()">
           <option value="">Select Resource Group</option>
         </select>
-        <button onclick="loadResourceGroups()">Reload RGs</button>
+        <button id="reloadRgsBtn" type="button">Reload RGs</button>
       </div>
 
       <table>
@@ -287,7 +281,25 @@
     </div>
   </div>
 
+  <!-- ✅ VM DETAILS MODAL -->
+  <div id="vmModalBg" onclick="modalBgClick(event)">
+    <div id="vmModal">
+      <div class="modal-header">
+        <div class="modal-title">VM Details</div>
+        <button class="close-btn" type="button" onclick="closeVmModal()">✕</button>
+      </div>
+
+      <div id="vmModalContent"></div>
+
+      <div style="margin-top:12px; color:#a9c0e6; font-size:13px; font-weight:800;">
+        Tip: Click VM name to view size, OS and power state quickly.
+      </div>
+    </div>
+  </div>
+
 <script>
+console.log("DASHBOARD JS LOADED ✅");
+
 let ALL_VMS = [];
 let busyKey = null;
 
@@ -296,7 +308,23 @@ function showMsg(text, ok=true){
   el.className = "msg " + (ok ? "ok" : "err");
   el.style.display = "block";
   el.innerText = text;
-  setTimeout(()=>{ el.style.display="none"; }, 3200);
+  setTimeout(()=>{ el.style.display="none"; }, 3500);
+}
+
+async function fetchJson(url, options){
+  const res = await fetch(url, options);
+  let data = {};
+  try { data = await res.json(); } catch(e) {}
+
+  if(res.status === 401){
+    showMsg("Session expired. Please login again.", false);
+    setTimeout(()=> window.location.href="/login", 900);
+    throw new Error("Unauthorized");
+  }
+  if(!res.ok){
+    throw new Error(data.error || ("Request failed: " + res.status));
+  }
+  return data;
 }
 
 function showTab(tab){
@@ -304,37 +332,35 @@ function showTab(tab){
   document.getElementById("tabRg").classList.toggle("active", tab==="rg");
   document.getElementById("panelVms").style.display = (tab==="vms") ? "block" : "none";
   document.getElementById("panelRg").style.display = (tab==="rg") ? "block" : "none";
+
+  if(tab==="vms"){ loadVMs(); loadCounts(); }
   if(tab==="rg"){ loadResourceGroups(); }
 }
 
 async function refreshAll(){
-  await Promise.all([loadCounts(), loadVMs()]);
+  const chip = document.getElementById("chipStatus");
+  if (chip) chip.innerText = "Refreshing...";
+  try{
+    await Promise.all([loadCounts(), loadVMs()]);
+    const t = new Date().toLocaleTimeString();
+    if (chip) chip.innerText = "Last refresh: " + t + " (20s)";
+  }catch(e){
+    if (chip) chip.innerText = "Refresh failed (check console)";
+  }
 }
 
 async function loadCounts(){
-  try{
-    const res = await fetch("/api/vm/status-count");
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || "Failed to load counts");
-    document.getElementById("m_total").innerText = data.total ?? "-";
-    document.getElementById("m_running").innerText = data.running ?? "-";
-    document.getElementById("m_stopped").innerText = data.stopped ?? "-";
-    document.getElementById("m_other").innerText = data.other ?? "-";
-  }catch(e){
-    // don't spam
-  }
+  const data = await fetchJson("/api/vm/status-count");
+  document.getElementById("m_total").innerText = data.total ?? "-";
+  document.getElementById("m_running").innerText = data.running ?? "-";
+  document.getElementById("m_stopped").innerText = data.stopped ?? "-";
+  document.getElementById("m_other").innerText = data.other ?? "-";
 }
 
 async function loadVMs(){
-  try{
-    const res = await fetch("/api/vms");
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || "Failed to load VMs");
-    ALL_VMS = Array.isArray(data) ? data : [];
-    renderVms();
-  }catch(e){
-    showMsg(e.message, false);
-  }
+  const data = await fetchJson("/api/vms");
+  ALL_VMS = Array.isArray(data) ? data : [];
+  renderVms();
 }
 
 function renderVms(){
@@ -364,7 +390,12 @@ function renderVms(){
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${vm.name}</td>
+      <td>
+        <a class="vmLink" href="javascript:void(0)"
+           onclick="openVmDetails('${vm.resource_group}','${vm.name}')">
+          ${vm.name}
+        </a>
+      </td>
       <td>${vm.resource_group}</td>
       <td class="status ${st}">${st}</td>
       <td>
@@ -382,15 +413,12 @@ async function vmAction(action, rg, name){
   const key = `${rg}:${name}`;
   busyKey = key;
   renderVms();
-
   try{
-    const res = await fetch(`/api/vm/${action}`, {
+    const data = await fetchJson(`/api/vm/${action}`, {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ resource_group: rg, vm_name: name })
     });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || "Action failed");
     showMsg(data.message || "Done", true);
     setTimeout(refreshAll, 2500);
   }catch(e){
@@ -410,17 +438,18 @@ function vmDelete(rg, name){
 /* ---------- RG EXPLORER ---------- */
 async function loadResourceGroups(){
   try{
-    const res = await fetch("/api/resource-groups");
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || "Failed to load resource groups");
+    const data = await fetchJson("/api/resource-groups");
     const sel = document.getElementById("rgSelect");
     sel.innerHTML = `<option value="">Select Resource Group</option>`;
+
     data.forEach(rg=>{
       const opt = document.createElement("option");
       opt.value = rg.name;
       opt.textContent = `${rg.name} (${rg.location || "-"})`;
       sel.appendChild(opt);
     });
+
+    showMsg(`Loaded ${data.length} resource groups ✅`, true);
   }catch(e){
     showMsg(e.message, false);
   }
@@ -433,17 +462,10 @@ async function loadResources(){
   if(!rg) return;
 
   try{
-    const res = await fetch(`/api/resources?rg=${encodeURIComponent(rg)}`);
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || "Failed to load resources");
-
+    const data = await fetchJson(`/api/resources?rg=${encodeURIComponent(rg)}`);
     data.forEach(r=>{
       const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${r.name}</td>
-        <td>${r.type}</td>
-        <td>${r.location || "-"}</td>
-      `;
+      tr.innerHTML = `<td>${r.name}</td><td>${r.type}</td><td>${r.location || "-"}</td>`;
       tbody.appendChild(tr);
     });
   }catch(e){
@@ -451,9 +473,59 @@ async function loadResources(){
   }
 }
 
-/* initial */
-refreshAll();
-setInterval(refreshAll, 20000);
+/* ✅ VM Details Modal */
+function closeVmModal(){
+  document.getElementById("vmModalBg").style.display = "none";
+  document.getElementById("vmModalContent").innerHTML = "";
+}
+
+function modalBgClick(e){
+  if(e.target && e.target.id === "vmModalBg"){
+    closeVmModal();
+  }
+}
+
+async function openVmDetails(rg, vmName){
+  try{
+    document.getElementById("vmModalBg").style.display = "flex";
+    document.getElementById("vmModalContent").innerHTML =
+      `<div class="info-box"><div class="info-label">Loading...</div><div class="info-val">Please wait</div></div>`;
+
+    const data = await fetchJson(`/api/vm/details?resource_group=${encodeURIComponent(rg)}&vm_name=${encodeURIComponent(vmName)}`);
+
+    const box = (label, val) => `
+      <div class="info-box">
+        <div class="info-label">${label}</div>
+        <div class="info-val">${val ?? "-"}</div>
+      </div>
+    `;
+
+    document.getElementById("vmModalContent").innerHTML =
+      box("VM Name", data.name) +
+      box("Resource Group", data.resource_group) +
+      box("Location", data.location) +
+      box("VM Size", data.vm_size) +
+      box("OS Type", data.os_type) +
+      box("Power State", data.power_state);
+
+  }catch(e){
+    closeVmModal();
+    showMsg(e.message, false);
+  }
+}
+
+/* ✅ Run only after page loaded */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("refreshBtn").addEventListener("click", refreshAll);
+
+  document.getElementById("reloadRgsBtn").addEventListener("click", () => {
+    console.log("Reload RGs clicked ✅");
+    loadResourceGroups();
+  });
+
+  refreshAll();
+  setInterval(refreshAll, 20000);
+});
 </script>
 </body>
 </html>

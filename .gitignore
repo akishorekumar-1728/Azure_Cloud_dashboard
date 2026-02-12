@@ -5,6 +5,7 @@
 *.env
 *.pem
 *.key
+testenv/
 test-vm-1_key.pem
 
 # ==============================
