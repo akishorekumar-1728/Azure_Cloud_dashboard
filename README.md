@@ -7,7 +7,7 @@
 Azure Cloud Dashboard is a web-based cloud management application that enables users to monitor and manage Microsoft Azure Virtual Machines and Resource Groups through a centralized dashboard. The system securely connects to Azure using Service Principal authentication and provides real-time resource monitoring and control.
 
 ---
-
+ 
 ## ✨ Features
 
 ### 🔹 Virtual Machine Management
