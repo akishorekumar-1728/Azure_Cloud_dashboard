@@ -184,7 +184,8 @@ Health Check Endpoint:
 
 👨‍💻 Author
 
-A Kishore Kumar 🎓 B.Tech IT Student
+A Kishore Kumar 
+🎓 B.Tech IT Student
 
 LinkedIn: https://www.linkedin.com/in/a-kishore-kumar-ba310a291
 
