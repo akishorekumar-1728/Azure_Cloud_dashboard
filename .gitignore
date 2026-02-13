@@ -43,3 +43,10 @@ Thumbs.db
 # 📦 VS Code
 # ==============================
 .vscode/
+venv/
+__pycache__/
+.env
+*.pem
+*.key
+*.pfx
+*.log

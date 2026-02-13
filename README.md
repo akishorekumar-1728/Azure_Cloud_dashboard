@@ -1,4 +1,5 @@
 
+---
 
 # 🚀 Azure Cloud Dashboard
 
@@ -7,7 +8,7 @@
 Azure Cloud Dashboard is a web-based cloud management application that enables users to monitor and manage Microsoft Azure Virtual Machines and Resource Groups through a centralized dashboard. The system securely connects to Azure using Service Principal authentication and provides real-time resource monitoring and control.
 
 ---
- 
+
 ## ✨ Features
 
 ### 🔹 Virtual Machine Management
@@ -139,8 +140,8 @@ Create a `.env` file:
 
 ```
 FLASK_SECRET_KEY=your_secret
-ADMIN_EMAIL=ADMIN-EMAIL
-ADMIN_PASSWORD=ADMIN_PASSWORD
+ADMIN_EMAIL=ADMINEMAIL_id
+ADMIN_PASSWORD=ADMIN_PASSWD
 AZURE_TENANT_ID=your_tenant_id
 AZURE_CLIENT_ID=your_client_id
 AZURE_CLIENT_SECRET=your_client_secret
@@ -174,4 +175,7 @@ Health Check Endpoint:
 ```
 
 ---
+
+
+
 
