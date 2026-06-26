@@ -23,7 +23,8 @@ def healthz():
     return jsonify({"status": "ok"}), 200
 
 # ---------------- ADMIN LOGIN (FROM ENV) ----------------
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@gmail.com")
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "" \
+"")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
 
 # ---------------- AZURE AUTH ----------------
