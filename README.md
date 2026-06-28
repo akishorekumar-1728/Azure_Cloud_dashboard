@@ -1,3 +1,4 @@
+
 # 🚀 Azure Cloud Dashboard (DevSecOps Enabled)
 
 ## 📌 Project Overview
@@ -247,12 +248,7 @@ Monitoring + Security + Cost Modules
 
 ## 📸 Screenshots
 
-![alt text](<Screenshot 2026-06-28 175211.png>) 
-![alt text](<Screenshot 2026-06-28 175231.png>) 
-![alt text](<Screenshot 2026-06-28 175251.png>) 
-![alt text](<Screenshot 2026-06-28 175306.png>) 
-![alt text](<Screenshot 2026-06-28 175341.png>) 
-![alt text](<Screenshot 2026-06-28 175403.png>)
+![alt text](<Screenshot 2026-06-28 175211.png>) ![alt text](<Screenshot 2026-06-28 175231.png>) ![alt text](<Screenshot 2026-06-28 175251.png>) ![alt text](<Screenshot 2026-06-28 175306.png>) ![alt text](<Screenshot 2026-06-28 175341.png>) ![alt text](<Screenshot 2026-06-28 175403.png>)
 
 ---
 
