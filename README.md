@@ -1,43 +1,96 @@
+# 🚀 Azure Cloud Dashboard (DevSecOps Enabled)
+
+## 📌 Project Overview
+
+Azure Cloud Dashboard is a **web-based cloud management and DevSecOps monitoring platform** built using Python and Flask. It allows users to securely manage and monitor Microsoft Azure Virtual Machines and Resource Groups from a centralized dashboard.
+
+The project has been enhanced with **monitoring, cost optimization, security scanning, and DevOps CI/CD capabilities**, making it suitable for real-world cloud operations and final-year evaluation.
 
 ---
 
-# 🚀 Azure Cloud Dashboard
+## 🎯 Key Objectives
 
-## 📌 Project Statement
-
-Azure Cloud Dashboard is a web-based cloud management application that enables users to monitor and manage Microsoft Azure Virtual Machines and Resource Groups through a centralized dashboard. The system securely connects to Azure using Service Principal authentication and provides real-time resource monitoring and control.
+* Centralized Azure resource management
+* Real-time VM monitoring
+* Cost optimization through idle resource detection
+* Security compliance scanning
+* Automated reporting and DevOps integration
 
 ---
 
 ## ✨ Features
 
-### 🔹 Virtual Machine Management
+### 🔹 1. Virtual Machine Management
 
 * View all Azure Virtual Machines
-* Monitor VM power status (Running / Stopped / Deallocated)
-* Start Virtual Machine
-* Stop Virtual Machine
-* Restart Virtual Machine
-* Delete Virtual Machine
-* View VM details (OS Type, Size, Location)
+* Start / Stop / Restart VMs
+* Delete Virtual Machines
+* View VM details (OS, size, region)
+* Real-time VM power status tracking
 
-### 🔹 Resource Group Explorer
+---
+
+### 🔹 2. Resource Group Explorer
 
 * List all Azure Resource Groups
-* View resources inside selected Resource Group
+* View resources inside each group
 
-### 🔹 Monitoring & Dashboard
+---
 
-* Real-time VM status count
-* Auto refresh every 20 seconds
-* Manual refresh button
+### 🔹 3. Monitoring Dashboard 📊
+
+* Real-time VM status overview
+* CPU usage monitoring (Azure Monitor integration)
+* Auto-refresh dashboard
+* VM health and uptime tracking
+* Interactive charts (Chart.js)
+
+---
+
+### 🔹 4. Alerts System 🚨
+
+* High CPU usage alerts (>80%)
+* VM down alerts
+* Idle VM detection alerts
+* Severity-based alert classification (Low / Medium / High)
+
+---
+
+### 🔹 5. Cost Optimization 💰
+
+* Idle VM detection (low CPU usage)
+* Cost-saving recommendations
+* Running vs Idle VM analysis
+* Estimated cost optimization insights
+
+---
+
+### 🔹 6. Security Compliance Scanner 🔐
+
+* NSG open port detection (22, 3389, 80, 443)
+* Public IP exposure detection
+* Storage account public access check
+* Risk scoring system (Low / Medium / High)
+* Security scan reporting
+
+---
+
+### 🔹 7. Reporting System 📄
+
+* Export reports in CSV format
+* Security scan reports
+* Cost optimization reports
+* Audit-friendly logs
+
+---
+
+### 🔹 8. DevOps & CI/CD ⚙️
+
+* GitHub Actions pipeline integration
+* Automated deployment support
 * Health check endpoint (`/healthz`)
-
-### 🔹 Security
-
-* Admin login authentication
-* Environment variable-based configuration
-* Secure Azure SDK authentication using ClientSecretCredential
+* Environment-based configuration
+* Logging support
 
 ---
 
@@ -47,7 +100,7 @@ Azure Cloud Dashboard is a web-based cloud management application that enables u
 
 * Python
 * Flask
-* Azure SDK
+* Azure SDK (Compute + Resource + Monitor)
 * Gunicorn (Production server)
 
 ### Frontend
@@ -55,41 +108,37 @@ Azure Cloud Dashboard is a web-based cloud management application that enables u
 * HTML
 * CSS
 * JavaScript
+* Chart.js (for visualization)
 
-### Cloud & Deployment
+### Cloud & DevOps
 
 * Microsoft Azure
 * Azure App Service (Linux)
 * Azure Virtual Machines
-* GitHub
+* GitHub Actions
+* Docker (optional containerization)
 
 ---
 
-## 🔗 APIs Used
+## 🔗 Azure APIs Used
 
-The application uses Microsoft Azure SDK APIs:
+* **Azure Identity**
 
-### 🔹 Azure Identity
+  * `ClientSecretCredential` (secure authentication)
 
-* `ClientSecretCredential`
-* Used for secure authentication with Azure
+* **Azure Compute Management**
 
-### 🔹 Azure Compute Management
+  * VM lifecycle operations (Start/Stop/Restart/Delete)
+  * VM instance view (power state)
 
-* `ComputeManagementClient`
-* List Virtual Machines
-* Start VM
-* Stop VM
-* Restart VM
-* Delete VM
-* Get VM details
-* Get VM instance view (Power state)
+* **Azure Resource Management**
 
-### 🔹 Azure Resource Management
+  * Resource Group listing
+  * Resource inventory management
 
-* `ResourceManagementClient`
-* List Resource Groups
-* List resources inside a Resource Group
+* **Azure Monitor Query**
+
+  * VM CPU performance metrics
 
 ---
 
@@ -112,13 +161,13 @@ python -m venv venv
 
 Activate:
 
-Windows:
+**Windows**
 
 ```bash
 venv\Scripts\activate
 ```
 
-Linux:
+**Linux / Mac**
 
 ```bash
 source venv/bin/activate
@@ -134,14 +183,16 @@ pip install -r requirements.txt
 
 ---
 
-### 4️⃣ Set Environment Variables
+### 4️⃣ Configure Environment Variables
 
 Create a `.env` file:
 
-```
-FLASK_SECRET_KEY=your_secret
-ADMIN_EMAIL=ADMINEMAIL_id
-ADMIN_PASSWORD=ADMIN_PASSWD
+```env
+FLASK_SECRET_KEY=your_secret_key
+
+ADMIN_EMAIL=your_admin_email
+ADMIN_PASSWORD=your_admin_password
+
 AZURE_TENANT_ID=your_tenant_id
 AZURE_CLIENT_ID=your_client_id
 AZURE_CLIENT_SECRET=your_client_secret
@@ -156,7 +207,7 @@ AZURE_SUBSCRIPTION_ID=your_subscription_id
 python app.py
 ```
 
-Open browser:
+Open in browser:
 
 ```
 http://127.0.0.1:5000
@@ -164,9 +215,11 @@ http://127.0.0.1:5000
 
 ---
 
-### 🌍 Deployment
+## 🌐 Deployment
 
-Deployed on Azure App Service (Linux) using GitHub integration.
+* Deployed using **Azure App Service (Linux)**
+* CI/CD enabled via **GitHub Actions**
+* Supports containerization via **Docker (optional)**
 
 Health Check Endpoint:
 
@@ -175,18 +228,48 @@ Health Check Endpoint:
 ```
 
 ---
-### Screenshots
-<img width="1412" height="777" alt="Screenshot 2026-02-13 180249" src="https://github.com/user-attachments/assets/be42cd73-dca9-4b59-9c44-a9f7997ac40a" />
-<img width="749" height="562" alt="Screenshot 2026-02-13 180317" src="https://github.com/user-attachments/assets/9341db08-77c6-416d-8ff1-c45a9502b611" />
-<img width="1709" height="766" alt="Screenshot 2026-02-13 180352" src="https://github.com/user-attachments/assets/0d7e8cbf-9c7e-46e8-8ae2-3817e8bf5bec" />
-<img width="1668" height="892" alt="Screenshot 2026-02-13 180419" src="https://github.com/user-attachments/assets/c16098f7-3fe8-4208-8802-16d4e4724716" />
-<img width="1714" height="937" alt="Screenshot 2026-02-13 180445" src="https://github.com/user-attachments/assets/0b07e25e-d771-4ee2-80cf-ec61915097d4" />
 
-👨‍💻 Author
+## 📊 Project Architecture
 
-A Kishore Kumar 
+```
+Flask App
+   ↓
+Azure SDK Integration
+   ↓
+Azure VM / Resource / Monitor APIs
+   ↓
+Dashboard UI (HTML + JS)
+   ↓
+Monitoring + Security + Cost Modules
+```
+
+---
+
+## 📸 Screenshots
+
+![alt text](<Screenshot 2026-06-28 175211.png>) 
+![alt text](<Screenshot 2026-06-28 175231.png>) 
+![alt text](<Screenshot 2026-06-28 175251.png>) 
+![alt text](<Screenshot 2026-06-28 175306.png>) 
+![alt text](<Screenshot 2026-06-28 175341.png>) 
+![alt text](<Screenshot 2026-06-28 175403.png>)
+
+---
+
+## 🧠 Future Enhancements
+
+* Kubernetes (AKS) integration
+* AI-based cost prediction
+* Auto-healing VM system
+* Multi-cloud support (AWS + GCP)
+
+---
+
+## 👨‍💻 Author
+
+**A. Kishore Kumar**
 🎓 B.Tech IT Student
 
-LinkedIn: https://www.linkedin.com/in/a-kishore-kumar-ba310a291
-
+🔗 LinkedIn:
+[https://www.linkedin.com/in/a-kishore-kumar-ba310a291](https://www.linkedin.com/in/a-kishore-kumar-ba310a291)
 
